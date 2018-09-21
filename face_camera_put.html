@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>tracking.js - face with camera</title>
+  <link rel="stylesheet" href="css/demo.css">
+
+  <script src="js/tracking-min.js"></script>
+  <script src="js/face-min.js"></script>
+  
+
+  <style>
+  #video, #canvas {
+    margin-left: 230px;
+    margin-top: 120px;
+    position: absolute;
+  }
+  </style>
+</head>
+<body>
+  <!--	<form  id="form" action="https://aip.baidubce.com/rest/2.0/face/v3/faceset/user/add?access_token=24.f2c06e4f66642cf297379d7065ac43dd.2592000.1540008281.282335-14241125" method="post" style="width:100px; height:200px;"> -->
+	<form id="form" action="http://172.16.0.129:8011/up_photo" method="post" style="width:100px; height:200px;"> 
+	<input type="text" name="image" id="image" value=""/>
+	<input type="text" name="image_type"  value="BASE64"/>
+	<input type="text" name="group_id" value="rhm"/>
+	<input type="text" name="user_id" id="user_id" value="1"/>
+	<input type="text" name="user_info" id="user_info" value=""/>
+	</form>
+	<button onclick="caiji()">开始采集</button>
+
+
+  <div class="demo-frame">
+    <div class="demo-container">
+      <video id="video" width="320" height="240" preload autoplay loop muted></video>
+      <canvas id="canvas" width="320" height="240"></canvas>
+	  <canvas id="canvas2" width="320" height="240" style="display:hidden"></canvas>
+    </div>
+
+  </div>
+
+ 
+
+
+
+ <script>
+
+      var video = document.getElementById('video');
+      var canvas = document.getElementById('canvas');
+	  var canvas2 = document.getElementById('canvas2');
+      var context = canvas.getContext('2d');
+	  var context2 = canvas2.getContext('2d');
+
+      var tracker = new tracking.ObjectTracker('face');
+      tracker.setInitialScale(4);
+      tracker.setStepSize(2);
+      tracker.setEdgesDensity(0.1);
+
+      tracking.track('#video', tracker, { camera: true });
+	  var continuenext = true;
+
+    var caiji = function() {
+	  var trackfunction = function(event) {
+		if(!continuenext)return false;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        event.data.forEach(function(rect) {
+          context.strokeStyle = '#a64ceb';
+          context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+          context.font = '11px Helvetica';
+          context.fillStyle = "#fff";
+          context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 11);
+          context.fillText('y: ' + rect.y + 'px', rect.x + rect.width + 5, rect.y + 22);
+			context2.drawImage(video, 0, 0, canvas2.width, canvas2.height);
+			
+			image = document.getElementById("image");
+			var imgData=canvas2.toDataURL("image/png");
+			image.value = imgData.substring(22);
+			form = document.getElementById("form");
+			tracker.removeListener("track", trackfunction);
+			alert(1)
+			form.submit();
+			
+        });
+      }
+
+      tracker.on('track', trackfunction);
+
+    };
+
+
+  </script>
+
+</body>
+</html>
